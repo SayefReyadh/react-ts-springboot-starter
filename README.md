@@ -24,9 +24,12 @@ A minimal full-stack template with a **React + TypeScript** frontend (Vite) and 
 Click **Code** → **Codespaces** → **Create codespace on main**
 
 ### 2. Automatic Setup (2-3 minutes)
-The devcontainer automatically installs:
-- ✅ JDK 17, Maven, Node.js 18
-- ✅ Builds backend and installs frontend dependencies
+The devcontainer automatically:
+- ✅ Installs JDK 17, Maven, Node.js 18
+- ✅ **Builds backend** (`mvn package`)
+- ✅ **Installs frontend dependencies** (`npm install`)
+
+> ⏳ Wait for the setup to complete before starting the servers.
 
 ### 3. Start Both Servers
 
@@ -55,6 +58,20 @@ curl http://localhost:8080/api/hello
 ### Prerequisites
 - Java 17+, Maven 3.6+, Node.js 18+
 
+### Initial Setup (First Time Only)
+
+**Build Backend:**
+```bash
+cd backend
+mvn clean package -DskipTests
+```
+
+**Install Frontend Dependencies:**
+```bash
+cd frontend
+npm install
+```
+
 ### Run Development Servers
 
 **Backend:**
@@ -67,7 +84,6 @@ mvn spring-boot:run
 **Frontend:**
 ```bash
 cd frontend
-npm install
 npm run dev
 # Runs at http://localhost:3000
 ```
