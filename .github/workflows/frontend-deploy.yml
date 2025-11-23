@@ -1,0 +1,78 @@
+name: Frontend Deployment
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: frontend-production
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '18'
+
+jobs:
+  # ============================================
+  # Deploy Frontend to Production (Vercel)
+  # Runs on: Push/Merge to main branch
+  # ============================================
+  deploy-production:
+    name: Deploy Frontend to Production
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Deploy to Vercel Production
+        id: deploy
+        run: |
+          URL=$(vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }})
+          echo "url=$URL" >> $GITHUB_OUTPUT
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VITE_API_URL: ${{ secrets.PROD_API_URL }}
+
+      - name: Deployment Summary
+        run: |
+          echo "✅ Production Frontend Deployment Completed!"
+          echo ""
+          echo "🌐 Production URL: ${{ steps.deploy.outputs.url }}"
+          echo "📍 API Backend: ${{ secrets.PROD_API_URL }}"
+          echo ""
+          echo "📦 Deployment Details:"
+          echo "  - Branch: ${{ github.ref_name }}"
+          echo "  - Commit: ${{ github.sha }}"
+          echo "  - Deployed by: ${{ github.actor }}"
+          echo ""
+          echo "🎉 All systems operational!"
+
+      - name: Notify Success
+        if: success()
+        run: |
+          echo "🎉 Frontend production deployment successful!"
+          echo "Your application is now live at: ${{ steps.deploy.outputs.url }}"
+          # Add Slack/Discord/Email notification here if needed
+
+      - name: Notify Failure
+        if: failure()
+        run: |
+          echo "❌ Frontend deployment failed!"
+          echo "Check the logs above for details."
+          echo "Triggered by: ${{ github.actor }}"
+          echo "Commit: ${{ github.sha }}"
+          # Add Slack/Discord/Email notification here if needed

@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: react-ts-springboot-backend
+    runtime: java
+    rootDir: backend
+    buildCommand: mvn clean package -DskipTests
+    startCommand: java -jar target/demo-0.0.1-SNAPSHOT.jar
+    envVars:
+      - key: JAVA_TOOL_OPTIONS
+        value: -Xmx512m
+    healthCheckPath: /api/hello

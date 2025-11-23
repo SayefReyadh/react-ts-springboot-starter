@@ -1,10 +1,13 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 function App() {
   const [message, setMessage] = useState<string>('Loading...')
 
   useEffect(() => {
-    fetch('/api/hello')
+    // Use environment variable for API URL in production, empty string uses Vite proxy in dev
+    const apiUrl = import.meta.env.VITE_API_URL || ''
+
+    fetch(`${apiUrl}/api/hello`)
       .then(res => res.json())
       .then(data => setMessage(data.message))
       .catch(err => setMessage('Error: ' + err.message))

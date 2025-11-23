@@ -1,4 +1,4 @@
-# React TypeScript + Spring Boot Starter Template
+# React TypeScript + Spring Boot Starter Template 
 
 A minimal full-stack template with a **React + TypeScript** frontend (Vite) and a **Spring Boot** backend.
 

@@ -1,0 +1,96 @@
+name: Backend Deployment
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: backend-production
+  cancel-in-progress: true
+
+env:
+  JAVA_VERSION: '17'
+
+jobs:
+  # ============================================
+  # Backend Deployment: Build, Deploy, Package
+  # ============================================
+  ci:
+    name: Backend Deployment - Build & Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Build with Maven
+        run: cd backend && mvn clean package -DskipTests
+
+      - name: Run tests
+        run: cd backend && mvn test
+        continue-on-error: false
+
+      - name: Upload JAR artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-jar
+          path: backend/target/*.jar
+          retention-days: 7
+
+  # ============================================
+  # Deploy Backend to Production (Render)
+  # Runs on: Push/Merge to main branch
+  # ============================================
+  deploy-production:
+    name: Deploy Backend to Production
+    needs: ci
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Render
+        id: deploy
+        run: |
+          echo "🚀 Triggering Render deployment..."
+
+          RESPONSE=$(curl -s -X POST "https://api.render.com/v1/services/${{ secrets.RENDER_SERVICE_ID }}/deploys" \
+            -H "Accept: application/json" \
+            -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d '{"clearCache": "clear"}')
+
+          echo "API Response: $RESPONSE"
+          echo "✅ Deployment triggered successfully"
+
+      - name: Deployment Summary
+        if: success()
+        run: |
+          echo "✅ Production Backend Deployment Completed!"
+          echo ""
+          echo "🌐 Service URL: https://react-ts-springboot-backend.onrender.com"
+          echo ""
+          echo "📦 Deployment Details:"
+          echo "  - Branch: ${{ github.ref_name }}"
+          echo "  - Commit: ${{ github.sha }}"
+          echo "  - Deploy ID: ${{ steps.deploy.outputs.deploy_id }}"
+          echo "  - Deployed by: ${{ github.actor }}"
+          echo ""
+          echo "🎉 Backend is now live!"
+
+      - name: Notify Success
+        if: success()
+        run: |
+          echo "🎉 Backend production deployment call successful!"
+          echo "Check Render dashboard for deployment status"
