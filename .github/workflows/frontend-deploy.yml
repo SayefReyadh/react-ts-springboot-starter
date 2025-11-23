@@ -18,6 +18,7 @@ jobs:
   # Runs on: Push/Merge to main branch
   # ============================================
   deploy-production:
+    if: false
     name: Deploy Frontend to Production
     runs-on: ubuntu-latest
     environment:
