@@ -22,6 +22,7 @@
     }
   },
   "postCreateCommand": "cd backend && mvn -q -DskipTests package && cd ../frontend && npm install",
+  "postStartCommand": "bash -c 'cd /workspaces/react-ts-springboot-starter/backend && mvn spring-boot:run > /tmp/backend.log 2>&1 &' && bash -c 'cd /workspaces/react-ts-springboot-starter/frontend && npm run dev > /tmp/frontend.log 2>&1 &'",
   "customizations": {
     "vscode": {
       "extensions": [
@@ -37,6 +38,41 @@
           {
             "name": "JavaSE-17",
             "path": "/usr/local/sdkman/candidates/java/current"
+          }
+        ]
+      },
+      "tasks": {
+        "version": "2.0.0",
+        "tasks": [
+          {
+            "label": "Run Backend",
+            "type": "shell",
+            "command": "cd backend && mvn spring-boot:run",
+            "isBackground": true,
+            "problemMatcher": [],
+            "presentation": {
+              "reveal": "always",
+              "panel": "dedicated",
+              "group": "dev-servers"
+            },
+            "runOptions": {
+              "runOn": "folderOpen"
+            }
+          },
+          {
+            "label": "Run Frontend",
+            "type": "shell",
+            "command": "cd frontend && npm run dev",
+            "isBackground": true,
+            "problemMatcher": [],
+            "presentation": {
+              "reveal": "always",
+              "panel": "dedicated",
+              "group": "dev-servers"
+            },
+            "runOptions": {
+              "runOn": "folderOpen"
+            }
           }
         ]
       }
