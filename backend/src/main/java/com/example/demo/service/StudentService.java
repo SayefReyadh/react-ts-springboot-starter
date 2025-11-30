@@ -46,24 +46,63 @@ public class StudentService {
     
     /**
      * Creates a new student in the database.
+     * Validates that the university ID is unique before creating.
      * @param student The student object to create
      * @return The saved student with generated ID
+     * @throws RuntimeException if a student with the same university ID already exists
      */
     public Student createStudent(Student student) {
+        // Check if a student with the same university ID already exists
+        Optional<Student> existingStudent = studentRepository.findByUniversityId(student.getUniversityId());
+        if (existingStudent.isPresent()) {
+            throw new RuntimeException("Student with university ID '" + student.getUniversityId() + "' already exists");
+        }
+        
+        // Validate required fields
+        if (student.getName() == null || student.getName().trim().isEmpty()) {
+            throw new RuntimeException("Student name is required");
+        }
+        if (student.getEmail() == null || student.getEmail().trim().isEmpty()) {
+            throw new RuntimeException("Student email is required");
+        }
+        if (student.getUniversityId() == null || student.getUniversityId().trim().isEmpty()) {
+            throw new RuntimeException("University ID is required");
+        }
+        
         return studentRepository.save(student);
     }
     
     /**
      * Updates an existing student's information.
+     * Validates that the new university ID doesn't conflict with existing students.
      * @param id The ID of the student to update
      * @param studentDetails The new student details
      * @return The updated student object
-     * @throws RuntimeException if student with given ID is not found
+     * @throws RuntimeException if student with given ID is not found or university ID conflicts
      */
     public Student updateStudent(Long id, Student studentDetails) {
         // Find the existing student or throw exception
         Student student = studentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Student not found with id: " + id));
+        
+        // Validate required fields
+        if (studentDetails.getName() == null || studentDetails.getName().trim().isEmpty()) {
+            throw new RuntimeException("Student name is required");
+        }
+        if (studentDetails.getEmail() == null || studentDetails.getEmail().trim().isEmpty()) {
+            throw new RuntimeException("Student email is required");
+        }
+        if (studentDetails.getUniversityId() == null || studentDetails.getUniversityId().trim().isEmpty()) {
+            throw new RuntimeException("University ID is required");
+        }
+        
+        // Check if the new university ID conflicts with another student
+        if (!student.getUniversityId().equals(studentDetails.getUniversityId())) {
+            Optional<Student> existingStudent = studentRepository.findByUniversityId(studentDetails.getUniversityId());
+            if (existingStudent.isPresent()) {
+                throw new RuntimeException("University ID '" + studentDetails.getUniversityId() + "' is already in use by another student");
+            }
+        }
         
         // Update the fields
         student.setName(studentDetails.getName());

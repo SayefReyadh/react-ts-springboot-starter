@@ -62,15 +62,26 @@ public class StudentController {
     /**
      * POST /api/students - Creates a new student.
      * @param student The student object from the request body (JSON)
-     * @return ResponseEntity with created student and HTTP 201 CREATED status
+     * @return ResponseEntity with created student and HTTP 201 CREATED status,
+     *         HTTP 409 CONFLICT if university ID already exists,
+     *         or HTTP 400 BAD REQUEST if validation fails
      * 
      * Example: POST http://localhost:8080/api/students
      * Body: {"name": "John Doe", "email": "john@example.com", "universityId": "U12345"}
      */
     @PostMapping
-    public ResponseEntity<Student> createStudent(@RequestBody Student student) {
-        Student createdStudent = studentService.createStudent(student);
-        return new ResponseEntity<>(createdStudent, HttpStatus.CREATED);
+    public ResponseEntity<?> createStudent(@RequestBody Student student) {
+        try {
+            Student createdStudent = studentService.createStudent(student);
+            return new ResponseEntity<>(createdStudent, HttpStatus.CREATED);
+        } catch (RuntimeException e) {
+            // Check if it's a duplicate university ID error
+            if (e.getMessage().contains("already exists")) {
+                return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
+            }
+            // Other validation errors (missing fields, etc.)
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
     }
     
     /**
@@ -78,18 +89,29 @@ public class StudentController {
      * @param id The student ID from the URL path
      * @param student The updated student data from the request body (JSON)
      * @return ResponseEntity with updated student and HTTP 200 OK if successful,
-     *         or HTTP 404 NOT FOUND if student doesn't exist
+     *         HTTP 404 NOT FOUND if student doesn't exist,
+     *         HTTP 409 CONFLICT if university ID is already in use,
+     *         or HTTP 400 BAD REQUEST if validation fails
      * 
      * Example: PUT http://localhost:8080/api/students/1
      * Body: {"name": "John Smith", "email": "john.smith@example.com", "universityId": "U12345"}
      */
     @PutMapping("/{id}")
-    public ResponseEntity<Student> updateStudent(@PathVariable Long id, @RequestBody Student student) {
+    public ResponseEntity<?> updateStudent(@PathVariable Long id, @RequestBody Student student) {
         try {
             Student updatedStudent = studentService.updateStudent(id, student);
             return new ResponseEntity<>(updatedStudent, HttpStatus.OK);
         } catch (RuntimeException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            // Check if student not found
+            if (e.getMessage().contains("not found")) {
+                return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+            }
+            // Check if it's a university ID conflict
+            if (e.getMessage().contains("already in use")) {
+                return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
+            }
+            // Other validation errors
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
     
@@ -102,12 +124,12 @@ public class StudentController {
      * Example: DELETE http://localhost:8080/api/students/1
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteStudent(@PathVariable Long id) {
+    public ResponseEntity<?> deleteStudent(@PathVariable Long id) {
         try {
             studentService.deleteStudent(id);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } catch (RuntimeException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         }
     }
 }
