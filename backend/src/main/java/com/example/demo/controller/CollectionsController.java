@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.*;
 
 /**
- * REST Controller demonstrating Java Collections in a backend application.
- * All endpoints are accessible at: http://localhost:8080/api/collections/*
+ * Simple Collections Examples for Students
+ * Test at: http://localhost:8080/api/collections/*
  */
 @RestController
 @RequestMapping("/api/collections")
@@ -20,402 +20,242 @@ public class CollectionsController {
     @Autowired
     private CollectionsExamplesService collectionsService;
     
-    // ==================== ArrayList Endpoints ====================
+    // ==================== EXAMPLE 1: ARRAYLIST ====================
     
     /**
-     * GET /api/collections/arraylist/demo
-     * Demonstrates ArrayList basic operations.
+     * GET /api/collections/demo/arraylist
+     * Demo: ArrayList basics (ordered, allows duplicates)
      */
-    @GetMapping("/arraylist/demo")
-    public ResponseEntity<Map<String, Object>> arrayListDemo() {
+    @GetMapping("/demo/arraylist")
+    public ResponseEntity<Map<String, Object>> demoArrayList() {
+        // Create ArrayList
         List<String> students = collectionsService.arrayListExample();
         
-        Map<String, Object> response = new HashMap<>();
-        response.put("description", "ArrayList: Ordered collection, allows duplicates");
-        response.put("originalList", students);
-        response.put("size", students.size());
-        response.put("containsDuplicates", students.size() != new HashSet<>(students).size());
+        // Filter (names starting with 'B')
+        List<String> filtered = collectionsService.filterStudents(students);
         
-        return ResponseEntity.ok(response);
-    }
-    
-    /**
-     * POST /api/collections/arraylist/filter
-     * Filters ArrayList based on criteria.
-     */
-    @PostMapping("/arraylist/filter")
-    public ResponseEntity<Map<String, Object>> filterArrayList(@RequestBody List<String> students) {
-        List<String> filtered = collectionsService.filterArrayList(students);
+        // Sort (alphabetically)
+        List<String> sorted = collectionsService.sortStudents(students);
+        
+        // Transform (to uppercase)
+        List<String> uppercase = collectionsService.transformToUpperCase(students);
         
         Map<String, Object> response = new HashMap<>();
+        response.put("📋 ArrayList", "Ordered list, allows duplicates");
         response.put("original", students);
-        response.put("filtered", filtered);
-        response.put("filterCriteria", "Names starting with 'B'");
+        response.put("filtered (starts with B)", filtered);
+        response.put("sorted (A-Z)", sorted);
+        response.put("transformed (UPPERCASE)", uppercase);
+        response.put("useCase", "Student lists, order matters");
         
         return ResponseEntity.ok(response);
     }
     
-    /**
-     * POST /api/collections/arraylist/sort
-     * Sorts ArrayList alphabetically.
-     */
-    @PostMapping("/arraylist/sort")
-    public ResponseEntity<Map<String, Object>> sortArrayList(@RequestBody List<String> students) {
-        List<String> sorted = collectionsService.sortArrayList(students);
-        
-        Map<String, Object> response = new HashMap<>();
-        response.put("original", students);
-        response.put("sorted", sorted);
-        
-        return ResponseEntity.ok(response);
-    }
+    // ==================== EXAMPLE 2: HASHSET ====================
     
     /**
-     * POST /api/collections/arraylist/transform
-     * Transforms ArrayList elements.
+     * GET /api/collections/demo/hashset
+     * Demo: HashSet basics (unique elements only)
      */
-    @PostMapping("/arraylist/transform")
-    public ResponseEntity<Map<String, Object>> transformArrayList(@RequestBody List<String> students) {
-        List<String> transformed = collectionsService.transformArrayList(students);
-        
-        Map<String, Object> response = new HashMap<>();
-        response.put("original", students);
-        response.put("transformed", transformed);
-        response.put("transformation", "Converted to UPPERCASE");
-        
-        return ResponseEntity.ok(response);
-    }
-    
-    // ==================== HashSet Endpoints ====================
-    
-    /**
-     * GET /api/collections/hashset/demo
-     * Demonstrates HashSet basic operations.
-     */
-    @GetMapping("/hashset/demo")
-    public ResponseEntity<Map<String, Object>> hashSetDemo() {
+    @GetMapping("/demo/hashset")
+    public ResponseEntity<Map<String, Object>> demoHashSet() {
+        // Create HashSet
         Set<String> emails = collectionsService.hashSetExample();
         
+        // Remove duplicates from a list
+        List<String> listWithDuplicates = Arrays.asList("A", "B", "A", "C", "B");
+        Set<String> unique = collectionsService.removeDuplicates(listWithDuplicates);
+        
         Map<String, Object> response = new HashMap<>();
-        response.put("description", "HashSet: Unordered, no duplicates, O(1) lookup");
+        response.put("🎯 HashSet", "Unique elements only, no duplicates");
         response.put("uniqueEmails", emails);
-        response.put("size", emails.size());
+        response.put("emailCount", emails.size() + " (duplicate ignored)");
+        response.put("listWithDuplicates", listWithDuplicates);
+        response.put("afterRemovingDuplicates", unique);
+        response.put("useCase", "Unique emails, prevent duplicates");
         
         return ResponseEntity.ok(response);
     }
     
-    /**
-     * POST /api/collections/hashset/remove-duplicates
-     * Removes duplicates from a list.
-     */
-    @PostMapping("/hashset/remove-duplicates")
-    public ResponseEntity<Map<String, Object>> removeDuplicates(@RequestBody List<String> list) {
-        Set<String> unique = collectionsService.removeDuplicates(list);
-        
-        Map<String, Object> response = new HashMap<>();
-        response.put("originalList", list);
-        response.put("originalSize", list.size());
-        response.put("uniqueElements", unique);
-        response.put("uniqueSize", unique.size());
-        response.put("duplicatesRemoved", list.size() - unique.size());
-        
-        return ResponseEntity.ok(response);
-    }
+    // ==================== EXAMPLE 3: STACK ====================
     
     /**
-     * GET /api/collections/hashset/check-email?email=alice@university.edu
-     * Checks if email exists in set.
+     * GET /api/collections/demo/stack
+     * Demo: Stack basics (LIFO - Last In, First Out)
      */
-    @GetMapping("/hashset/check-email")
-    public ResponseEntity<Map<String, Object>> checkEmail(@RequestParam String email) {
-        Set<String> emails = collectionsService.hashSetExample();
-        boolean exists = collectionsService.emailExists(emails, email);
-        
-        Map<String, Object> response = new HashMap<>();
-        response.put("email", email);
-        response.put("exists", exists);
-        response.put("allEmails", emails);
-        
-        return ResponseEntity.ok(response);
-    }
-    
-    // ==================== Stack Endpoints ====================
-    
-    /**
-     * GET /api/collections/stack/demo
-     * Demonstrates Stack (LIFO) operations.
-     */
-    @GetMapping("/stack/demo")
-    public ResponseEntity<Map<String, Object>> stackDemo() {
+    @GetMapping("/demo/stack")
+    public ResponseEntity<Map<String, Object>> demoStack() {
+        // Create Stack (browser history)
         Stack<String> history = collectionsService.stackExample();
         
-        Map<String, Object> response = new HashMap<>();
-        response.put("description", "Stack: LIFO (Last In First Out)");
-        response.put("navigationHistory", new ArrayList<>(history));
-        response.put("currentPage", history.peek());
-        response.put("size", history.size());
-        
-        return ResponseEntity.ok(response);
-    }
-    
-    /**
-     * GET /api/collections/stack/navigate-back
-     * Simulates browser back button.
-     */
-    @GetMapping("/stack/navigate-back")
-    public ResponseEntity<Map<String, Object>> navigateBack() {
-        Stack<String> history = collectionsService.stackExample();
         String currentPage = history.peek();
-        String previousPage = collectionsService.navigateBack(history);
+        String previousPage = collectionsService.goBack(history);
         
         Map<String, Object> response = new HashMap<>();
-        response.put("beforeNavigation", currentPage);
-        response.put("afterNavigation", previousPage);
-        response.put("remainingHistory", new ArrayList<>(history));
+        response.put("📚 Stack", "LIFO - Last In, First Out");
+        response.put("browserHistory", Arrays.asList("google.com", "facebook.com", "youtube.com"));
+        response.put("currentPage", "youtube.com");
+        response.put("afterGoingBack", previousPage);
+        response.put("useCase", "Browser back button, undo operations");
         
         return ResponseEntity.ok(response);
     }
     
-    /**
-     * GET /api/collections/stack/check-balanced?expression=(())
-     * Checks if parentheses are balanced.
-     */
-    @GetMapping("/stack/check-balanced")
-    public ResponseEntity<Map<String, Object>> checkBalanced(@RequestParam String expression) {
-        boolean balanced = collectionsService.isBalancedParentheses(expression);
-        
-        Map<String, Object> response = new HashMap<>();
-        response.put("expression", expression);
-        response.put("isBalanced", balanced);
-        
-        return ResponseEntity.ok(response);
-    }
-    
-    // ==================== Queue Endpoints ====================
+    // ==================== EXAMPLE 4: QUEUE ====================
     
     /**
-     * GET /api/collections/queue/demo
-     * Demonstrates Queue (FIFO) operations.
+     * GET /api/collections/demo/queue
+     * Demo: Queue basics (FIFO - First In, First Out)
      */
-    @GetMapping("/queue/demo")
-    public ResponseEntity<Map<String, Object>> queueDemo() {
+    @GetMapping("/demo/queue")
+    public ResponseEntity<Map<String, Object>> demoQueue() {
+        // Create Queue (print queue)
         Queue<String> queue = collectionsService.queueExample();
         
+        String firstInLine = queue.peek();
+        String processed = collectionsService.processNext(queue);
+        String nextInLine = queue.peek();
+        
         Map<String, Object> response = new HashMap<>();
-        response.put("description", "Queue: FIFO (First In First Out)");
-        response.put("registrationQueue", new ArrayList<>(queue));
-        response.put("nextStudent", queue.peek());
-        response.put("size", queue.size());
+        response.put("📝 Queue", "FIFO - First In, First Out");
+        response.put("printQueue", Arrays.asList("Document1.pdf", "Document2.pdf", "Document3.pdf"));
+        response.put("firstInLine", firstInLine);
+        response.put("processed", processed);
+        response.put("nextInLine", nextInLine);
+        response.put("useCase", "Print queue, task processing");
         
         return ResponseEntity.ok(response);
     }
     
-    /**
-     * GET /api/collections/queue/process-next
-     * Processes next student in queue.
-     */
-    @GetMapping("/queue/process-next")
-    public ResponseEntity<Map<String, Object>> processNext() {
-        Queue<String> queue = collectionsService.queueExample();
-        String nextStudent = collectionsService.peekNextStudent(queue);
-        String processed = collectionsService.processNextStudent(queue);
-        
-        Map<String, Object> response = new HashMap<>();
-        response.put("processedStudent", processed);
-        response.put("nextInQueue", collectionsService.peekNextStudent(queue));
-        response.put("remainingQueue", new ArrayList<>(queue));
-        
-        return ResponseEntity.ok(response);
-    }
+    // ==================== EXAMPLE 5: COMPARABLE vs COMPARATOR ====================
     
     /**
-     * GET /api/collections/priority-queue/demo
-     * Demonstrates PriorityQueue.
+     * GET /api/collections/demo/comparable
+     * Demo: Comparable (natural ordering)
      */
-    @GetMapping("/priority-queue/demo")
-    public ResponseEntity<Map<String, Object>> priorityQueueDemo() {
-        PriorityQueue<Integer> grades = collectionsService.priorityQueueExample();
-        
-        Map<String, Object> response = new HashMap<>();
-        response.put("description", "PriorityQueue: Elements ordered by priority");
-        response.put("allGrades", new ArrayList<>(grades));
-        response.put("highestGrade", grades.peek());
-        
-        return ResponseEntity.ok(response);
-    }
-    
-    // ==================== Course Collections - Comparable/Comparator ====================
-    
-    /**
-     * GET /api/collections/courses/all
-     * Gets all sample courses.
-     */
-    @GetMapping("/courses/all")
-    public ResponseEntity<List<Course>> getAllCourses() {
-        return ResponseEntity.ok(collectionsService.createSampleCourses());
-    }
-    
-    /**
-     * GET /api/collections/courses/sort-natural
-     * Sorts courses using Comparable (by course code).
-     */
-    @GetMapping("/courses/sort-natural")
-    public ResponseEntity<Map<String, Object>> sortCoursesNatural() {
+    @GetMapping("/demo/comparable")
+    public ResponseEntity<Map<String, Object>> demoComparable() {
         List<Course> courses = collectionsService.createSampleCourses();
-        List<Course> sorted = collectionsService.sortByCourseCodeNatural(courses);
+        List<Course> sorted = collectionsService.sortByCourseCode(courses);
         
         Map<String, Object> response = new HashMap<>();
-        response.put("description", "Sorted using Comparable (natural ordering by course code)");
-        response.put("sortedCourses", sorted);
+        response.put("🔤 Comparable", "Natural ordering (defined IN the class)");
+        response.put("original", courses);
+        response.put("sortedByCourseCode", sorted);
+        response.put("howItWorks", "Course class implements Comparable interface");
+        response.put("code", "Collections.sort(courses) // Uses compareTo()");
         
         return ResponseEntity.ok(response);
     }
     
     /**
-     * GET /api/collections/courses/sort-by-credits
-     * Sorts courses by credits using Comparator.
+     * GET /api/collections/demo/comparator
+     * Demo: Comparator (custom ordering)
      */
-    @GetMapping("/courses/sort-by-credits")
-    public ResponseEntity<Map<String, Object>> sortCoursesByCredits() {
+    @GetMapping("/demo/comparator")
+    public ResponseEntity<Map<String, Object>> demoComparator() {
         List<Course> courses = collectionsService.createSampleCourses();
-        List<Course> sorted = collectionsService.sortByCredits(courses);
+        
+        // Sort by credits (using Comparator class)
+        List<Course> byCredits = collectionsService.sortByCredits(courses);
+        
+        // Sort by enrollment (using lambda)
+        List<Course> byEnrollment = collectionsService.sortByEnrollment(courses);
         
         Map<String, Object> response = new HashMap<>();
-        response.put("description", "Sorted using Comparator (by credits descending)");
-        response.put("sortedCourses", sorted);
+        response.put("⚙️ Comparator", "Custom ordering (defined OUTSIDE the class)");
+        response.put("original", courses);
+        response.put("sortedByCredits", byCredits);
+        response.put("sortedByEnrollment", byEnrollment);
+        response.put("advantage", "Multiple ways to sort the same objects");
+        response.put("code", "sorted.sort((c1, c2) -> ...)");
         
         return ResponseEntity.ok(response);
     }
     
-    /**
-     * GET /api/collections/courses/sort-by-enrollment
-     * Sorts courses by enrollment using Comparator.
-     */
-    @GetMapping("/courses/sort-by-enrollment")
-    public ResponseEntity<Map<String, Object>> sortCoursesByEnrollment() {
-        List<Course> courses = collectionsService.createSampleCourses();
-        List<Course> sorted = collectionsService.sortByEnrollment(courses);
-        
-        Map<String, Object> response = new HashMap<>();
-        response.put("description", "Sorted using Comparator (by enrolled students descending)");
-        response.put("sortedCourses", sorted);
-        
-        return ResponseEntity.ok(response);
-    }
+    // ==================== EXAMPLE 6: FILTER & TRANSFORM ====================
     
     /**
-     * GET /api/collections/courses/sort-by-date
-     * Sorts courses by start date using Comparator.
+     * GET /api/collections/demo/filter-transform
+     * Demo: Filter and transform collections
      */
-    @GetMapping("/courses/sort-by-date")
-    public ResponseEntity<Map<String, Object>> sortCoursesByDate() {
+    @GetMapping("/demo/filter-transform")
+    public ResponseEntity<Map<String, Object>> demoFilterTransform() {
         List<Course> courses = collectionsService.createSampleCourses();
-        List<Course> sorted = collectionsService.sortByStartDate(courses);
         
-        Map<String, Object> response = new HashMap<>();
-        response.put("description", "Sorted using Comparator (by start date)");
-        response.put("sortedCourses", sorted);
-        
-        return ResponseEntity.ok(response);
-    }
-    
-    /**
-     * GET /api/collections/courses/sort-by-instructor
-     * Sorts courses by instructor using lambda Comparator.
-     */
-    @GetMapping("/courses/sort-by-instructor")
-    public ResponseEntity<Map<String, Object>> sortCoursesByInstructor() {
-        List<Course> courses = collectionsService.createSampleCourses();
-        List<Course> sorted = collectionsService.sortByInstructor(courses);
-        
-        Map<String, Object> response = new HashMap<>();
-        response.put("description", "Sorted using Lambda Comparator (by instructor name)");
-        response.put("sortedCourses", sorted);
-        
-        return ResponseEntity.ok(response);
-    }
-    
-    /**
-     * GET /api/collections/courses/filter-popular
-     * Filters popular courses (>90 students).
-     */
-    @GetMapping("/courses/filter-popular")
-    public ResponseEntity<Map<String, Object>> filterPopularCourses() {
-        List<Course> courses = collectionsService.createSampleCourses();
+        // Filter: Get popular courses (>100 students)
         List<Course> popular = collectionsService.filterPopularCourses(courses);
         
+        // Transform: Extract course names only
+        List<String> courseNames = collectionsService.getCourseNames(courses);
+        
         Map<String, Object> response = new HashMap<>();
-        response.put("description", "Courses with > 90 students");
-        response.put("popularCourses", popular);
-        response.put("count", popular.size());
+        response.put("🔍 Filter & Transform", "Process collections with streams");
+        response.put("allCourses", courses);
+        response.put("filtered (>100 students)", popular);
+        response.put("transformed (names only)", courseNames);
+        response.put("code", "stream().filter(...).map(...).collect()");
         
         return ResponseEntity.ok(response);
     }
     
-    /**
-     * GET /api/collections/courses/filter-four-credits
-     * Filters 4-credit courses.
-     */
-    @GetMapping("/courses/filter-four-credits")
-    public ResponseEntity<Map<String, Object>> filterFourCreditCourses() {
-        List<Course> courses = collectionsService.createSampleCourses();
-        List<Course> fourCredit = collectionsService.filterFourCreditCourses(courses);
-        
-        Map<String, Object> response = new HashMap<>();
-        response.put("description", "4-credit courses");
-        response.put("courses", fourCredit);
-        response.put("count", fourCredit.size());
-        
-        return ResponseEntity.ok(response);
-    }
+    // ==================== ALL EXAMPLES IN ONE ====================
     
     /**
-     * GET /api/collections/courses/unique-instructors
-     * Gets unique instructors using Set.
+     * GET /api/collections/demo/all
+     * Run all examples at once!
      */
-    @GetMapping("/courses/unique-instructors")
-    public ResponseEntity<Map<String, Object>> getUniqueInstructors() {
+    @GetMapping("/demo/all")
+    public ResponseEntity<Map<String, Object>> demoAll() {
+        Map<String, Object> response = new LinkedHashMap<>();
+        
+        // 1. ArrayList
+        List<String> students = collectionsService.arrayListExample();
+        response.put("1️⃣ ArrayList", Map.of(
+            "description", "Ordered, allows duplicates",
+            "example", students,
+            "filtered", collectionsService.filterStudents(students)
+        ));
+        
+        // 2. HashSet
+        Set<String> emails = collectionsService.hashSetExample();
+        response.put("2️⃣ HashSet", Map.of(
+            "description", "Unique elements only",
+            "example", emails,
+            "size", emails.size() + " (duplicate ignored)"
+        ));
+        
+        // 3. Stack
+        Stack<String> history = collectionsService.stackExample();
+        response.put("3️⃣ Stack", Map.of(
+            "description", "LIFO - Last In, First Out",
+            "example", new ArrayList<>(history),
+            "top", history.peek()
+        ));
+        
+        // 4. Queue
+        Queue<String> queue = collectionsService.queueExample();
+        response.put("4️⃣ Queue", Map.of(
+            "description", "FIFO - First In, First Out",
+            "example", new ArrayList<>(queue),
+            "first", queue.peek()
+        ));
+        
+        // 5. Comparable
         List<Course> courses = collectionsService.createSampleCourses();
-        Set<String> instructors = collectionsService.getUniqueInstructors(courses);
+        response.put("5️⃣ Comparable", Map.of(
+            "description", "Natural ordering (IN the class)",
+            "sorted", collectionsService.sortByCourseCode(courses)
+        ));
         
-        Map<String, Object> response = new HashMap<>();
-        response.put("description", "Unique instructors extracted using Set");
-        response.put("instructors", instructors);
-        response.put("count", instructors.size());
+        // 6. Comparator
+        response.put("6️⃣ Comparator", Map.of(
+            "description", "Custom ordering (OUTSIDE the class)",
+            "byCredits", collectionsService.sortByCredits(courses),
+            "byEnrollment", collectionsService.sortByEnrollment(courses)
+        ));
         
-        return ResponseEntity.ok(response);
-    }
-    
-    /**
-     * GET /api/collections/courses/statistics
-     * Gets course statistics using collection operations.
-     */
-    @GetMapping("/courses/statistics")
-    public ResponseEntity<Map<String, Object>> getCourseStatistics() {
-        List<Course> courses = collectionsService.createSampleCourses();
-        
-        Map<String, Object> response = new HashMap<>();
-        response.put("totalCourses", courses.size());
-        response.put("totalEnrollment", collectionsService.getTotalEnrollment(courses));
-        response.put("mostPopularCourse", collectionsService.getMostPopularCourse(courses));
-        response.put("uniqueInstructors", collectionsService.getUniqueInstructors(courses).size());
-        response.put("coursesByInstructor", collectionsService.groupCoursesByInstructor(courses));
-        
-        return ResponseEntity.ok(response);
-    }
-    
-    /**
-     * GET /api/collections/courses/complex-filter
-     * Complex filtering and sorting example.
-     */
-    @GetMapping("/courses/complex-filter")
-    public ResponseEntity<Map<String, Object>> complexFilterAndSort() {
-        List<Course> courses = collectionsService.createSampleCourses();
-        List<Course> result = collectionsService.complexFilterAndSort(courses);
-        
-        Map<String, Object> response = new HashMap<>();
-        response.put("description", "4-credit courses sorted by enrollment (desc) then by course code");
-        response.put("filteredAndSortedCourses", result);
+        response.put("✅ Summary", "All 6 collection examples completed!");
         
         return ResponseEntity.ok(response);
     }

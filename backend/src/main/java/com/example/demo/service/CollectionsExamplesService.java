@@ -9,337 +9,194 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Service demonstrating Java Collections framework.
- * Shows practical backend use cases for ArrayList, HashSet, Stack, and Queue.
+ * Simple Collections Examples for Students
+ * 
+ * Learn about:
+ * 1. ArrayList - Ordered list (allows duplicates)
+ * 2. HashSet - Unique elements (no duplicates)
+ * 3. Stack - LIFO (Last In, First Out)
+ * 4. Queue - FIFO (First In, First Out)
+ * 5. Comparable vs Comparator - Sorting objects
  */
 @Service
 public class CollectionsExamplesService {
     
-    // ==================== ArrayList Examples ====================
+    // ==================== 1. ARRAYLIST - Ordered List ====================
     
     /**
-     * ArrayList: Ordered, allows duplicates, best for indexed access.
-     * Use case: Maintaining course enrollment history, ordered lists.
+     * ArrayList Example: Store student names
+     * - Maintains order
+     * - Allows duplicates
+     * - Good for: Lists of items, ordered data
      */
     public List<String> arrayListExample() {
-        List<String> studentNames = new ArrayList<>();
-        
-        // Adding elements
-        studentNames.add("Alice Johnson");
-        studentNames.add("Bob Smith");
-        studentNames.add("Charlie Brown");
-        studentNames.add("Diana Prince");
-        studentNames.add("Bob Smith"); // Duplicates allowed
-        
-        return studentNames;
+        List<String> students = new ArrayList<>();
+        students.add("Alice");
+        students.add("Bob");
+        students.add("Charlie");
+        students.add("Diana");
+        students.add("Bob"); // Duplicate allowed!
+        return students;
     }
     
     /**
-     * Filter ArrayList: Get students whose names start with 'B'.
+     * FILTER ArrayList: Get names starting with 'B'
      */
-    public List<String> filterArrayList(List<String> students) {
+    public List<String> filterStudents(List<String> students) {
         return students.stream()
                 .filter(name -> name.startsWith("B"))
                 .collect(Collectors.toList());
     }
     
     /**
-     * Sort ArrayList: Alphabetically.
+     * SORT ArrayList: Alphabetically
      */
-    public List<String> sortArrayList(List<String> students) {
+    public List<String> sortStudents(List<String> students) {
         List<String> sorted = new ArrayList<>(students);
         Collections.sort(sorted);
         return sorted;
     }
     
     /**
-     * Transform ArrayList: Convert to uppercase.
+     * TRANSFORM ArrayList: Convert to uppercase
      */
-    public List<String> transformArrayList(List<String> students) {
+    public List<String> transformToUpperCase(List<String> students) {
         return students.stream()
                 .map(String::toUpperCase)
                 .collect(Collectors.toList());
     }
     
-    // ==================== HashSet Examples ====================
+    // ==================== 2. HASHSET - Unique Elements ====================
     
     /**
-     * HashSet: Unordered, no duplicates, fast lookup.
-     * Use case: Unique email addresses, preventing duplicate enrollments.
+     * HashSet Example: Store unique emails
+     * - No duplicates
+     * - No guaranteed order
+     * - Good for: Unique items, fast lookup
      */
     public Set<String> hashSetExample() {
-        Set<String> uniqueEmails = new HashSet<>();
-        
-        uniqueEmails.add("alice@university.edu");
-        uniqueEmails.add("bob@university.edu");
-        uniqueEmails.add("charlie@university.edu");
-        uniqueEmails.add("alice@university.edu"); // Duplicate ignored
-        
-        return uniqueEmails; // Only 3 elements
+        Set<String> emails = new HashSet<>();
+        emails.add("alice@university.edu");
+        emails.add("bob@university.edu");
+        emails.add("charlie@university.edu");
+        emails.add("alice@university.edu"); // Duplicate ignored!
+        return emails; // Only 3 emails
     }
     
     /**
-     * Remove duplicates from a list using HashSet.
+     * Remove duplicates using HashSet
      */
-    public Set<String> removeDuplicates(List<String> list) {
-        return new HashSet<>(list);
+    public Set<String> removeDuplicates(List<String> listWithDuplicates) {
+        return new HashSet<>(listWithDuplicates);
     }
     
-    /**
-     * Check if email exists (O(1) time complexity).
-     */
-    public boolean emailExists(Set<String> emails, String email) {
-        return emails.contains(email);
-    }
+    // ==================== 3. STACK - Last In, First Out ====================
     
     /**
-     * Find common elements between two sets (intersection).
-     */
-    public Set<String> findCommonElements(Set<String> set1, Set<String> set2) {
-        Set<String> intersection = new HashSet<>(set1);
-        intersection.retainAll(set2);
-        return intersection;
-    }
-    
-    // ==================== Stack Examples ====================
-    
-    /**
-     * Stack: LIFO (Last In First Out).
-     * Use case: Undo operations, navigation history, expression evaluation.
+     * Stack Example: Browser back button
+     * - LIFO: Last In, First Out
+     * - Good for: Undo operations, navigation history
      */
     public Stack<String> stackExample() {
-        Stack<String> pageHistory = new Stack<>();
-        
-        // Navigate pages
-        pageHistory.push("Home Page");
-        pageHistory.push("Courses Page");
-        pageHistory.push("Student Profile");
-        pageHistory.push("Edit Profile");
-        
-        return pageHistory;
+        Stack<String> browserHistory = new Stack<>();
+        browserHistory.push("google.com");      // Visit page 1
+        browserHistory.push("facebook.com");    // Visit page 2
+        browserHistory.push("youtube.com");     // Visit page 3
+        return browserHistory;
     }
     
     /**
-     * Simulate browser back button using Stack.
+     * Go back (pop from stack)
      */
-    public String navigateBack(Stack<String> history) {
+    public String goBack(Stack<String> history) {
         if (!history.isEmpty()) {
-            String currentPage = history.pop(); // Remove current page
-            return history.isEmpty() ? "No previous page" : history.peek();
+            history.pop(); // Remove current page
+            return history.isEmpty() ? "No history" : history.peek();
         }
         return "Empty history";
     }
     
-    /**
-     * Check if parentheses are balanced using Stack.
-     * Example: "(())" -> balanced, "(()" -> not balanced
-     */
-    public boolean isBalancedParentheses(String expression) {
-        Stack<Character> stack = new Stack<>();
-        
-        for (char ch : expression.toCharArray()) {
-            if (ch == '(') {
-                stack.push(ch);
-            } else if (ch == ')') {
-                if (stack.isEmpty()) {
-                    return false;
-                }
-                stack.pop();
-            }
-        }
-        
-        return stack.isEmpty();
-    }
-    
-    // ==================== Queue Examples ====================
+    // ==================== 4. QUEUE - First In, First Out ====================
     
     /**
-     * Queue: FIFO (First In First Out).
-     * Use case: Processing requests, task scheduling, message processing.
+     * Queue Example: Print queue
+     * - FIFO: First In, First Out
+     * - Good for: Task processing, waiting lines
      */
     public Queue<String> queueExample() {
-        Queue<String> registrationQueue = new LinkedList<>();
-        
-        // Students joining registration queue
-        registrationQueue.offer("Alice");
-        registrationQueue.offer("Bob");
-        registrationQueue.offer("Charlie");
-        registrationQueue.offer("Diana");
-        
-        return registrationQueue;
+        Queue<String> printQueue = new LinkedList<>();
+        printQueue.offer("Document1.pdf");  // First in line
+        printQueue.offer("Document2.pdf");
+        printQueue.offer("Document3.pdf");  // Last in line
+        return printQueue;
     }
     
     /**
-     * Process registration queue: Handle next student.
+     * Process next item in queue
      */
-    public String processNextStudent(Queue<String> queue) {
-        if (!queue.isEmpty()) {
-            return queue.poll(); // Remove and return first element
-        }
-        return "Queue is empty";
+    public String processNext(Queue<String> queue) {
+        return queue.isEmpty() ? "Queue is empty" : queue.poll();
     }
     
-    /**
-     * Peek at next student without removing.
-     */
-    public String peekNextStudent(Queue<String> queue) {
-        return queue.isEmpty() ? "Queue is empty" : queue.peek();
-    }
+    // ==================== 5. COMPARABLE vs COMPARATOR ====================
     
     /**
-     * PriorityQueue: Elements ordered by priority (natural ordering or Comparator).
-     * Use case: Task prioritization, emergency handling.
-     */
-    public PriorityQueue<Integer> priorityQueueExample() {
-        PriorityQueue<Integer> grades = new PriorityQueue<>(Collections.reverseOrder());
-        
-        grades.offer(85);
-        grades.offer(92);
-        grades.offer(78);
-        grades.offer(95);
-        grades.offer(88);
-        
-        return grades; // Head is always highest grade (95)
-    }
-    
-    // ==================== Course Collections with Comparable/Comparator ====================
-    
-    /**
-     * Create sample courses for demonstration.
+     * Create sample courses for sorting examples
      */
     public List<Course> createSampleCourses() {
         List<Course> courses = new ArrayList<>();
-        
-        courses.add(new Course("CS101", "Introduction to Programming", 3, 
+        courses.add(new Course("CS101", "Intro to Programming", 3, 
                 LocalDate.of(2025, 1, 15), "Dr. Smith", 120));
         courses.add(new Course("CS202", "Data Structures", 4, 
                 LocalDate.of(2025, 1, 20), "Dr. Johnson", 85));
-        courses.add(new Course("CS305", "Database Systems", 3, 
-                LocalDate.of(2025, 2, 1), "Dr. Williams", 95));
-        courses.add(new Course("CS401", "Software Engineering", 4, 
-                LocalDate.of(2025, 1, 15), "Dr. Brown", 70));
         courses.add(new Course("CS150", "Web Development", 3, 
                 LocalDate.of(2025, 1, 25), "Dr. Davis", 110));
-        
         return courses;
     }
     
     /**
-     * Sort courses using Comparable (natural ordering by course code).
+     * COMPARABLE: Sort using natural ordering (by course code)
+     * The Course class implements Comparable interface
      */
-    public List<Course> sortByCourseCodeNatural(List<Course> courses) {
+    public List<Course> sortByCourseCode(List<Course> courses) {
         List<Course> sorted = new ArrayList<>(courses);
-        Collections.sort(sorted); // Uses Comparable.compareTo()
-        return sorted;
+        Collections.sort(sorted); // Uses Course.compareTo()
+        return sorted; // CS101, CS150, CS202
     }
     
     /**
-     * Sort courses by credits using Comparator.
+     * COMPARATOR: Sort by credits (custom logic)
      */
     public List<Course> sortByCredits(List<Course> courses) {
         List<Course> sorted = new ArrayList<>(courses);
         sorted.sort(new CourseComparators.ByCreditsDescending());
-        return sorted;
+        return sorted; // 4 credits first, then 3 credits
     }
     
     /**
-     * Sort courses by enrollment using Comparator.
+     * COMPARATOR: Sort by enrollment (most popular first)
      */
     public List<Course> sortByEnrollment(List<Course> courses) {
         List<Course> sorted = new ArrayList<>(courses);
-        sorted.sort(new CourseComparators.ByEnrolledStudentsDescending());
-        return sorted;
+        sorted.sort((c1, c2) -> Integer.compare(c2.getEnrolledStudents(), c1.getEnrolledStudents()));
+        return sorted; // 120, 110, 85
     }
     
     /**
-     * Sort courses by start date using Comparator.
-     */
-    public List<Course> sortByStartDate(List<Course> courses) {
-        List<Course> sorted = new ArrayList<>(courses);
-        sorted.sort(new CourseComparators.ByStartDate());
-        return sorted;
-    }
-    
-    /**
-     * Sort courses by instructor using lambda Comparator.
-     */
-    public List<Course> sortByInstructor(List<Course> courses) {
-        List<Course> sorted = new ArrayList<>(courses);
-        sorted.sort(CourseComparators.BY_INSTRUCTOR);
-        return sorted;
-    }
-    
-    /**
-     * Filter courses: Get courses with more than 90 students.
+     * FILTER courses: Get courses with > 100 students
      */
     public List<Course> filterPopularCourses(List<Course> courses) {
         return courses.stream()
-                .filter(course -> course.getEnrolledStudents() > 90)
+                .filter(c -> c.getEnrolledStudents() > 100)
                 .collect(Collectors.toList());
     }
     
     /**
-     * Filter courses: Get 4-credit courses.
+     * TRANSFORM courses: Extract course names only
      */
-    public List<Course> filterFourCreditCourses(List<Course> courses) {
+    public List<String> getCourseNames(List<Course> courses) {
         return courses.stream()
-                .filter(course -> course.getCredits() == 4)
-                .collect(Collectors.toList());
-    }
-    
-    /**
-     * Transform courses: Extract course codes only.
-     */
-    public List<String> extractCourseCodes(List<Course> courses) {
-        return courses.stream()
-                .map(Course::getCourseCode)
-                .collect(Collectors.toList());
-    }
-    
-    /**
-     * Get unique instructors using Set.
-     */
-    public Set<String> getUniqueInstructors(List<Course> courses) {
-        return courses.stream()
-                .map(Course::getInstructor)
-                .collect(Collectors.toSet());
-    }
-    
-    /**
-     * Calculate total enrollment across all courses.
-     */
-    public int getTotalEnrollment(List<Course> courses) {
-        return courses.stream()
-                .mapToInt(Course::getEnrolledStudents)
-                .sum();
-    }
-    
-    /**
-     * Find course with maximum enrollment.
-     */
-    public Optional<Course> getMostPopularCourse(List<Course> courses) {
-        return courses.stream()
-                .max(Comparator.comparingInt(Course::getEnrolledStudents));
-    }
-    
-    /**
-     * Group courses by instructor.
-     */
-    public Map<String, List<Course>> groupCoursesByInstructor(List<Course> courses) {
-        return courses.stream()
-                .collect(Collectors.groupingBy(Course::getInstructor));
-    }
-    
-    /**
-     * Complex example: Compound sorting and filtering.
-     * Get 4-credit courses, sorted by enrollment descending, then by course code.
-     */
-    public List<Course> complexFilterAndSort(List<Course> courses) {
-        return courses.stream()
-                .filter(course -> course.getCredits() == 4)
-                .sorted(Comparator.comparingInt(Course::getEnrolledStudents)
-                        .reversed()
-                        .thenComparing(Course::getCourseCode))
+                .map(Course::getCourseName)
                 .collect(Collectors.toList());
     }
 }
