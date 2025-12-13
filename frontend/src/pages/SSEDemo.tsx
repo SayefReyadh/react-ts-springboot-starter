@@ -122,11 +122,6 @@ export default function SSEDemo() {
     setProgressValue(0);
 
     try {
-      // Connect to SSE stream that processes data
-      if (progressSourceRef.current) {
-        progressSourceRef.current.close();
-      }
-
       // Use fetch to send POST with streaming response
       const response = await fetch("/api/sse/process-data", {
         method: "POST",
@@ -144,29 +139,46 @@ export default function SSEDemo() {
         const processStream = async () => {
           try {
             let buffer = "";
+            let currentEvent = "";
+
             while (true) {
               const { done, value } = await reader.read();
-              if (done) break;
+              if (done) {
+                setIsProcessing(false);
+                break;
+              }
 
               buffer += decoder.decode(value, { stream: true });
-              const lines = buffer.split("\n\n");
+              const lines = buffer.split("\n");
+
+              // Keep the last incomplete line in buffer
               buffer = lines.pop() || "";
 
               for (const line of lines) {
-                if (line.startsWith("data: ")) {
-                  const data = line.substring(6);
+                if (line.startsWith("event:")) {
+                  currentEvent = line.substring(6).trim();
+                } else if (line.startsWith("data:")) {
+                  const data = line.substring(5).trim();
+
                   try {
                     const parsed = JSON.parse(data);
 
-                    if (parsed.message === "Processing started") {
-                      setProgressValue(25);
-                    } else if (parsed.processedData) {
+                    if (currentEvent === "started") {
+                      console.log("Processing started:", parsed);
+                      setProgressValue(50);
+                    } else if (currentEvent === "completed") {
+                      console.log("Processing completed:", parsed);
                       setProgressValue(100);
                       setTimeout(() => setIsProcessing(false), 1000);
                     }
                   } catch (e) {
-                    console.log("Data:", data);
+                    console.log("Non-JSON data:", data);
                   }
+
+                  currentEvent = ""; // Reset after processing
+                } else if (line === "") {
+                  // Empty line marks end of event
+                  currentEvent = "";
                 }
               }
             }
