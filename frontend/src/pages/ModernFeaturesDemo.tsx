@@ -46,14 +46,11 @@ export default function ModernFeaturesDemo() {
   const testFireAndForget = async () => {
     setAsyncLoading(true);
     try {
-      const response = await fetch(
-        "http://localhost:8080/api/async/fire-and-forget",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ taskName: "FrontendTask" }),
-        }
-      );
+      const response = await fetch("/api/async/fire-and-forget", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ taskName: "FrontendTask" }),
+      });
       const data = await response.json();
       setAsyncResult(data);
     } catch (error) {
@@ -66,12 +63,9 @@ export default function ModernFeaturesDemo() {
   const testParallelProcessing = async () => {
     setAsyncLoading(true);
     try {
-      const response = await fetch(
-        "http://localhost:8080/api/async/parallel?taskCount=5",
-        {
-          method: "POST",
-        }
-      );
+      const response = await fetch("/api/async/parallel?taskCount=5", {
+        method: "POST",
+      });
       const data = await response.json();
       setAsyncResult(data);
     } catch (error) {
@@ -84,9 +78,7 @@ export default function ModernFeaturesDemo() {
   // SSE Operations
   const connectSSE = () => {
     const clientId = "client-" + Math.random().toString(36).substr(2, 9);
-    const eventSource = new EventSource(
-      `http://localhost:8080/api/sse/stream?clientId=${clientId}`
-    );
+    const eventSource = new EventSource(`/api/sse/stream?clientId=${clientId}`);
 
     eventSource.addEventListener("connected", (e) => {
       console.log("SSE Connected:", e.data);
@@ -140,9 +132,7 @@ export default function ModernFeaturesDemo() {
   const testSSECounter = async () => {
     setSseMessages([]);
     const clientId = "counter-" + Math.random().toString(36).substr(2, 9);
-    const eventSource = new EventSource(
-      `http://localhost:8080/api/sse/counter?duration=10`
-    );
+    const eventSource = new EventSource(`/api/sse/counter?duration=10`);
 
     eventSource.onmessage = (e) => {
       setSseMessages((prev) => [
@@ -165,7 +155,7 @@ export default function ModernFeaturesDemo() {
 
   const broadcastSSE = async () => {
     try {
-      await fetch("http://localhost:8080/api/sse/broadcast", {
+      await fetch("/api/sse/broadcast", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: "Hello from React Frontend!" }),
@@ -177,7 +167,7 @@ export default function ModernFeaturesDemo() {
 
   // WebSocket Operations
   const connectWebSocket = () => {
-    const socket = new SockJS("http://localhost:8080/ws");
+    const socket = new SockJS("/ws");
     const client = new Client({
       webSocketFactory: () => socket as any,
       debug: (str) => console.log(str),
@@ -246,7 +236,7 @@ export default function ModernFeaturesDemo() {
 
   const broadcastWebSocket = async () => {
     try {
-      await fetch("http://localhost:8080/api/websocket/broadcast", {
+      await fetch("/api/websocket/broadcast", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: "Server broadcast from React!" }),
