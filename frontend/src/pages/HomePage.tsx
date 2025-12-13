@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Student } from '../types/Student'
 import { studentApi } from '../services/studentApi'
 import StudentForm from '../components/StudentForm'
@@ -76,7 +77,34 @@ function HomePage() {
 
   return (
     <div style={styles.container}>
-      <h1 style={styles.title}>Student Management System</h1>
+      <div style={styles.heroSection}>
+        <h1 style={styles.heroTitle}>🚀 Spring Boot + React Starter</h1>
+        <p style={styles.heroSubtitle}>
+          Full-stack application with modern async patterns, WebSocket, and SSE demos
+        </p>
+        
+        <div style={styles.demoCards}>
+          <Link to="/websocket" style={styles.demoCard}>
+            <div style={styles.demoIcon}>🔌</div>
+            <h3 style={styles.demoCardTitle}>WebSocket Demo</h3>
+            <p style={styles.demoCardDesc}>Real-time bidirectional chat with STOMP protocol</p>
+          </Link>
+          
+          <Link to="/sse" style={styles.demoCard}>
+            <div style={styles.demoIcon}>📡</div>
+            <h3 style={styles.demoCardTitle}>SSE Demo</h3>
+            <p style={styles.demoCardDesc}>Server-sent events for live updates and progress tracking</p>
+          </Link>
+          
+          <Link to="/async" style={styles.demoCard}>
+            <div style={styles.demoIcon}>⚡</div>
+            <h3 style={styles.demoCardTitle}>Async Demo</h3>
+            <p style={styles.demoCardDesc}>@Async, @Scheduled, and CompletableFuture patterns</p>
+          </Link>
+        </div>
+      </div>
+
+      <h2 style={styles.title}>Student Management System</h2>
       
       {error && <div style={styles.error}>{error}</div>}
       
@@ -101,15 +129,66 @@ function HomePage() {
 
 const styles = {
   container: {
-    maxWidth: '1200px',
+    maxWidth: '1400px',
     margin: '0 auto',
     padding: '24px',
     fontFamily: 'system-ui, sans-serif',
+  } as React.CSSProperties,
+  heroSection: {
+    textAlign: 'center' as const,
+    padding: '40px 20px',
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    borderRadius: '12px',
+    marginBottom: '40px',
+    color: 'white',
+  } as React.CSSProperties,
+  heroTitle: {
+    fontSize: '42px',
+    fontWeight: 'bold',
+    margin: '0 0 15px 0',
+  } as React.CSSProperties,
+  heroSubtitle: {
+    fontSize: '18px',
+    opacity: 0.9,
+    margin: '0 0 30px 0',
+  } as React.CSSProperties,
+  demoCards: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+    gap: '20px',
+    marginTop: '30px',
+  } as React.CSSProperties,
+  demoCard: {
+    backgroundColor: 'white',
+    padding: '30px 20px',
+    borderRadius: '8px',
+    textDecoration: 'none',
+    color: '#333',
+    transition: 'transform 0.3s, box-shadow 0.3s',
+    cursor: 'pointer',
+    boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+  } as React.CSSProperties,
+  demoIcon: {
+    fontSize: '48px',
+    marginBottom: '15px',
+  } as React.CSSProperties,
+  demoCardTitle: {
+    fontSize: '20px',
+    fontWeight: 'bold',
+    margin: '0 0 10px 0',
+    color: '#2c3e50',
+  } as React.CSSProperties,
+  demoCardDesc: {
+    fontSize: '14px',
+    color: '#7f8c8d',
+    margin: 0,
+    lineHeight: '1.5',
   } as React.CSSProperties,
   title: {
     textAlign: 'center' as const,
     color: '#333',
     marginBottom: '30px',
+    marginTop: '20px',
   } as React.CSSProperties,
   error: {
     backgroundColor: '#ffebee',

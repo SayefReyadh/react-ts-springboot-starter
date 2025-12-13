@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Demo</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .connected {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .disconnected {
+            background-color: #f44336;
+            color: white;
+        }
+        input, button {
+            padding: 10px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+            border: none;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #messages {
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin: 20px 0;
+            background-color: #fafafa;
+            border-radius: 5px;
+        }
+        .message {
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 5px;
+            background-color: white;
+            border-left: 3px solid #4CAF50;
+        }
+        .user-event {
+            background-color: #e3f2fd;
+            border-left-color: #2196F3;
+        }
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        input[type="text"] {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔌 Spring Boot WebSocket Demo</h1>
+        
+        <div id="status" class="status disconnected">Disconnected</div>
+        
+        <div class="input-group">
+            <input type="text" id="username" placeholder="Enter your username" value="User1">
+            <button onclick="connect()">Connect</button>
+            <button onclick="disconnect()">Disconnect</button>
+        </div>
+        
+        <div id="messages"></div>
+        
+        <div class="input-group">
+            <input type="text" id="messageInput" placeholder="Type a message..." disabled>
+            <button onclick="sendMessage()" id="sendBtn" disabled>Send</button>
+        </div>
+        
+        <div style="margin-top: 20px; padding: 15px; background-color: #e8f5e9; border-radius: 5px;">
+            <h3>📝 Instructions:</h3>
+            <ol>
+                <li>Enter your username</li>
+                <li>Click "Connect" to join</li>
+                <li>Type messages and click "Send"</li>
+                <li>Open multiple browser tabs to test multi-user chat</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        let stompClient = null;
+        let username = '';
+
+        function connect() {
+            username = document.getElementById('username').value.trim();
+            
+            if (!username) {
+                alert('Please enter a username');
+                return;
+            }
+
+            const socket = new SockJS('http://localhost:8080/ws');
+            stompClient = Stomp.over(socket);
+            
+            stompClient.connect({}, function(frame) {
+                console.log('Connected: ' + frame);
+                updateStatus(true);
+                
+                // Subscribe to public messages
+                stompClient.subscribe('/topic/messages', function(message) {
+                    const msg = JSON.parse(message.body);
+                    showMessage(msg.sender + ': ' + msg.content, false);
+                });
+                
+                // Subscribe to user events
+                stompClient.subscribe('/topic/users', function(message) {
+                    const event = JSON.parse(message.body);
+                    showMessage(event.username + ' ' + event.type.toLowerCase() + 
+                               ' (Online: ' + event.onlineCount + ')', true);
+                });
+                
+                // Send join notification
+                stompClient.send('/app/join', {}, JSON.stringify({
+                    userId: 'user_' + Date.now(),
+                    username: username
+                }));
+                
+                // Enable message input
+                document.getElementById('messageInput').disabled = false;
+                document.getElementById('sendBtn').disabled = false;
+            });
+        }
+
+        function disconnect() {
+            if (stompClient !== null) {
+                stompClient.send('/app/leave', {}, JSON.stringify({
+                    userId: 'user_' + Date.now(),
+                    username: username
+                }));
+                stompClient.disconnect();
+            }
+            updateStatus(false);
+            document.getElementById('messageInput').disabled = true;
+            document.getElementById('sendBtn').disabled = true;
+            console.log('Disconnected');
+        }
+
+        function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const content = messageInput.value.trim();
+            
+            if (content && stompClient) {
+                stompClient.send('/app/chat', {}, JSON.stringify({
+                    sender: username,
+                    content: content
+                }));
+                messageInput.value = '';
+            }
+        }
+
+        function showMessage(message, isEvent) {
+            const messagesDiv = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message' + (isEvent ? ' user-event' : '');
+            messageDiv.textContent = message;
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function updateStatus(connected) {
+            const statusDiv = document.getElementById('status');
+            if (connected) {
+                statusDiv.textContent = 'Connected as ' + username;
+                statusDiv.className = 'status connected';
+            } else {
+                statusDiv.textContent = 'Disconnected';
+                statusDiv.className = 'status disconnected';
+            }
+        }
+
+        // Send message on Enter key
+        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>

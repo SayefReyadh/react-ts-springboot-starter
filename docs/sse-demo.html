@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Server-Sent Events Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #2196F3;
+            padding-bottom: 10px;
+        }
+        .demo-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #fafafa;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0b7dda;
+        }
+        button.stop {
+            background-color: #f44336;
+        }
+        button.stop:hover {
+            background-color: #da190b;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .connected {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .disconnected {
+            background-color: #9e9e9e;
+            color: white;
+        }
+        #events, #counter, #progress {
+            height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin: 10px 0;
+            background-color: white;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .event-item {
+            padding: 5px;
+            margin: 3px 0;
+            border-left: 3px solid #2196F3;
+            background-color: #e3f2fd;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background-color: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background-color: #4CAF50;
+            width: 0%;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📡 Server-Sent Events (SSE) Demo</h1>
+        
+        <!-- Event Stream Demo -->
+        <div class="demo-section">
+            <h3>1️⃣ Event Stream</h3>
+            <p>Connect to receive real-time server updates</p>
+            <div id="streamStatus" class="status disconnected">Disconnected</div>
+            <button onclick="connectStream()">Connect Stream</button>
+            <button onclick="disconnectStream()" class="stop">Disconnect</button>
+            <div id="events"></div>
+        </div>
+        
+        <!-- Counter Demo -->
+        <div class="demo-section">
+            <h3>2️⃣ Live Counter</h3>
+            <p>Streams a counter for 30 seconds</p>
+            <div id="counterStatus" class="status disconnected">Stopped</div>
+            <button onclick="startCounter()">Start Counter</button>
+            <button onclick="stopCounter()" class="stop">Stop Counter</button>
+            <div id="counter"></div>
+        </div>
+        
+        <!-- Progress Tracker Demo -->
+        <div class="demo-section">
+            <h3>3️⃣ Progress Tracker</h3>
+            <p>Track a long-running task with progress updates</p>
+            <div id="progressStatus" class="status disconnected">Not Started</div>
+            <button onclick="startProgress()">Start Task</button>
+            <div class="progress-bar">
+                <div id="progressBar" class="progress-fill">0%</div>
+            </div>
+            <div id="progress"></div>
+        </div>
+        
+        <div style="margin-top: 20px; padding: 15px; background-color: #fff3e0; border-radius: 5px;">
+            <h3>📝 About SSE:</h3>
+            <ul>
+                <li><strong>One-way:</strong> Server pushes updates to client</li>
+                <li><strong>Automatic reconnection:</strong> Browser handles it</li>
+                <li><strong>Built-in:</strong> No special libraries needed</li>
+                <li><strong>Use cases:</strong> Progress bars, notifications, live dashboards</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        let streamEventSource = null;
+        let counterEventSource = null;
+        let progressEventSource = null;
+        const clientId = 'client_' + Date.now();
+
+        // Event Stream Demo
+        function connectStream() {
+            if (streamEventSource) {
+                alert('Already connected');
+                return;
+            }
+
+            streamEventSource = new EventSource(`http://localhost:8080/api/sse/stream?clientId=${clientId}`);
+            
+            streamEventSource.addEventListener('connected', (e) => {
+                updateStatus('streamStatus', true, 'Connected');
+                addEvent('events', '✅ ' + e.data);
+            });
+
+            streamEventSource.addEventListener('broadcast', (e) => {
+                const data = JSON.parse(e.data);
+                addEvent('events', '📢 ' + data.message);
+            });
+
+            streamEventSource.addEventListener('message', (e) => {
+                const data = JSON.parse(e.data);
+                addEvent('events', '💬 ' + data.message);
+            });
+
+            streamEventSource.onerror = (error) => {
+                console.error('Stream error:', error);
+                updateStatus('streamStatus', false, 'Error/Disconnected');
+            };
+        }
+
+        function disconnectStream() {
+            if (streamEventSource) {
+                streamEventSource.close();
+                streamEventSource = null;
+                updateStatus('streamStatus', false, 'Disconnected');
+                addEvent('events', '🔴 Disconnected');
+            }
+        }
+
+        // Counter Demo
+        function startCounter() {
+            if (counterEventSource) {
+                alert('Counter already running');
+                return;
+            }
+
+            document.getElementById('counter').innerHTML = '';
+            updateStatus('counterStatus', true, 'Running...');
+            
+            counterEventSource = new EventSource('http://localhost:8080/api/sse/counter?duration=30');
+            
+            counterEventSource.addEventListener('count', (e) => {
+                const data = JSON.parse(e.data);
+                addEvent('counter', `Count: ${data.count}/${data.total} (${data.percentage}%)`);
+            });
+
+            counterEventSource.addEventListener('finished', (e) => {
+                addEvent('counter', '✅ ' + e.data);
+                stopCounter();
+            });
+
+            counterEventSource.onerror = () => {
+                stopCounter();
+            };
+        }
+
+        function stopCounter() {
+            if (counterEventSource) {
+                counterEventSource.close();
+                counterEventSource = null;
+            }
+            updateStatus('counterStatus', false, 'Stopped');
+        }
+
+        // Progress Tracker Demo
+        function startProgress() {
+            if (progressEventSource) {
+                alert('Task already running');
+                return;
+            }
+
+            document.getElementById('progress').innerHTML = '';
+            document.getElementById('progressBar').style.width = '0%';
+            document.getElementById('progressBar').textContent = '0%';
+            updateStatus('progressStatus', true, 'Processing...');
+            
+            const taskId = 'task_' + Date.now();
+            progressEventSource = new EventSource(`http://localhost:8080/api/sse/progress/${taskId}`);
+            
+            progressEventSource.addEventListener('progress', (e) => {
+                const data = JSON.parse(e.data);
+                document.getElementById('progressBar').style.width = data.progress + '%';
+                document.getElementById('progressBar').textContent = data.progress + '%';
+                addEvent('progress', `Step ${data.step}/${data.totalSteps}: ${data.message}`);
+            });
+
+            progressEventSource.addEventListener('complete', (e) => {
+                const data = JSON.parse(e.data);
+                addEvent('progress', '✅ ' + data.message);
+                updateStatus('progressStatus', false, 'Completed');
+                progressEventSource.close();
+                progressEventSource = null;
+            });
+
+            progressEventSource.onerror = () => {
+                updateStatus('progressStatus', false, 'Error');
+                if (progressEventSource) {
+                    progressEventSource.close();
+                    progressEventSource = null;
+                }
+            };
+        }
+
+        // Helper Functions
+        function updateStatus(elementId, connected, text) {
+            const statusDiv = document.getElementById(elementId);
+            statusDiv.textContent = text;
+            statusDiv.className = 'status ' + (connected ? 'connected' : 'disconnected');
+        }
+
+        function addEvent(elementId, message) {
+            const container = document.getElementById(elementId);
+            const eventDiv = document.createElement('div');
+            eventDiv.className = 'event-item';
+            eventDiv.textContent = new Date().toLocaleTimeString() + ' - ' + message;
+            container.appendChild(eventDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            disconnectStream();
+            stopCounter();
+            if (progressEventSource) {
+                progressEventSource.close();
+            }
+        });
+    </script>
+</body>
+</html>
