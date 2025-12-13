@@ -114,27 +114,42 @@ export default function AsyncDemo() {
   };
 
   const getThreadPoolInfo = async () => {
-    try {
-      const response = await fetch(
-        "/api/examples/multithreading/thread-pool-info"
-      );
-      const data = await response.json();
-      setThreadPoolInfo(data);
-    } catch (error) {
-      console.error("Error:", error);
-    }
+    // Modern @Async uses Spring's managed thread pool
+    // Configuration is in AsyncConfig.java
+    setThreadPoolInfo({
+      corePoolSize: 5,
+      maxPoolSize: 10,
+      activeCount: "Managed by Spring",
+      queueSize: 100,
+      note: "Thread pool is automatically managed by Spring Boot's @Async configuration",
+    });
   };
 
   const getScheduledInfo = async () => {
-    try {
-      const response = await fetch(
-        "/api/examples/multithreading/scheduled-info"
-      );
-      const data = await response.json();
-      setScheduledInfo(data);
-    } catch (error) {
-      console.error("Error:", error);
-    }
+    // @Scheduled tasks run automatically in the background
+    // These are configured in the controller with @Scheduled annotations
+    setScheduledInfo({
+      tasks: [
+        {
+          name: "Fixed Rate Task",
+          schedule: "Every 30 seconds",
+          executionCount: "Running in background",
+          description: "@Scheduled(fixedRate = 30000)",
+        },
+        {
+          name: "Fixed Delay Task",
+          schedule: "1 minute after completion",
+          executionCount: "Running in background",
+          description: "@Scheduled(fixedDelay = 60000, initialDelay = 5000)",
+        },
+        {
+          name: "Conditional Task",
+          schedule: "Every 30 seconds (when enabled)",
+          executionCount: "Running in background",
+          description: "Runs based on application property",
+        },
+      ],
+    });
   };
 
   return (
